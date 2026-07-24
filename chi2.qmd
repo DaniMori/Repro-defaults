@@ -1,0 +1,41 @@
+---
+title: "Chi-square"
+format:
+  html:
+    embed-resources: true
+    code-tools: true
+knitr:
+  opts_chunk: 
+    engine.path:
+      octave: "C:/Program Files/GNU Octave/Octave-11.3.0/mingw64/bin/octave-cli.exe"
+---
+
+Octave version: 11.3.0
+
+```{octave}
+% Set up environment
+clear all;
+
+pkg load statistics
+
+
+% Read in data
+fid = fopen('dat/Chi Square/chi2_r_schiekiera.csv', 'r');
+
+data = textscan(fid, ...
+  '%q %f %q %f %q %q %q %q %q %q %q %f %q %q %q %q %q %q %q %q %q %q %q %f %f %f %f %f %f %q %q %q %q %q %q %q %q %q %q %q %q %f %q', ...
+  'Delimiter', ',', 'HeaderLines', 1);
+
+fclose(fid);
+
+% Get columns
+% Get columns
+quartile          = data{29};
+covidence_support = data{43};
+
+% Create contingency table for quartile and support
+contingency_table = crosstab(quartile, covidence_support);
+
+% Perform chi-square test
+[pval, chisq, df] = chi2test(contingency_table)
+```

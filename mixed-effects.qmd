@@ -13,28 +13,55 @@ knitr:
 Octave version: 11.3.0
 
 ```{octave}
+#| eval: false
+
+pkg install datatypes
+pkg install statistics
+```
+
+
+
+```{octave}
+#| warning: false 
+
 % Set up environment
+
 clear all;
 
+%% Avoid throwing warning by loading the "statistics" package:
+warning('off', 'Octave:shadowed-function');
+
+%% Load packages:
 pkg load statistics
+pkg load io
 
 
 % Read in data:
-fid = fopen('dat/Mixed Effects Models/mixed-stata_protzko.csv', 'r');
+raw       = csv2cell('dat/Mixed Effects Models/mixed-stata_protzko.csv');
+var_names = raw(1, :);
+data      = cell2struct(raw(2:end, :), var_names, 2);
 
-%% Experimental data
-exp_data = textscan(fid, '%q %u %s %s %u %s %u', ...
-                    'Delimiter', ',', 'HeaderLines', 1);
-%% Participant responses
-% FIXME: Doesn't read the responses from the file:
-resp_data = dlmread(fid, ',', 2, 8);
+% Select variables
+loyal = [data.loyal]';
+squo  = [data.squo]';
+scen  = [data.scenario]';
+id    = [data.id]';
 
-fclose(fid);
+% Mixed-effects model fitting - Scenario 1:
+  
+%% Ancillary objects:
+n          = length(data);
+intercepts = [ones(n, 1), squo];      % fixed intercept + fixed slope of squo
+random     = {intercepts, ones(n,1)}; % id: intercept + squo slope; scenario: intercept
+group      = {categorical(id), categorical(scen)};
 
-% Get columns
-% TODO: Complete
+% The lines after the first one only assign names to the variables, but do not
+%   affect the default behavior of the estimation algorithm:
+lme = fitlmematrix(intercepts, loyal, random, group, ...
+                   'FixedEffectPredictors', {'Intercept','squo'}, ...
+                   'RandomEffectPredictors', ...
+                   {{'Intercept','squo'}, {'Intercept'}}, ...
+                   'RandomEffectGroups', {'id','scenario'});
 
-
-% Run model
-% TODO: Complete
+lme % Output model diagnostics.
 ```

@@ -1,0 +1,37 @@
+---
+title: "Paired T-test"
+format:
+  html:
+    embed-resources: true
+    code-tools: true
+knitr:
+  opts_chunk: 
+    engine.path:
+      octave: "C:/Program Files/GNU Octave/Octave-11.3.0/mingw64/bin/octave-cli.exe"
+---
+
+Octave version: 11.3.0
+
+```{octave}
+% Set up environment
+clear all;
+
+%% Avoid throwing warning by loading the "statistics" package:
+warning('off', 'Octave:shadowed-function');
+
+%% Load packages:
+pkg load statistics
+pkg load io
+
+
+% Read in data:
+raw       = csv2cell('dat/Paired-Samples t-test/pairedttest_R_Protzko.csv');
+var_names = raw(1, :);
+data      = cell2struct(raw(2:end, :), var_names, 2);
+
+% Select variables
+RightMyth       = [data.RightMyth]';
+RightProcedural = [data.RightProcedural]';
+
+[sig, p_value, ci, stats] = ttest(RightMyth, RightProcedural)
+```

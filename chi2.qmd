@@ -16,6 +16,9 @@ Octave version: 11.3.0
 % Set up environment
 clear all;
 
+%% Avoid throwing warning by loading the "statistics" package:
+warning('off', 'Octave:shadowed-function');
+
 pkg load statistics
 
 

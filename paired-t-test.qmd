@@ -10,6 +10,22 @@ knitr:
       octave: "C:/Program Files/GNU Octave/Octave-11.3.0/mingw64/bin/octave-cli.exe"
 ---
 
+NOTE: Because Octave function [csv2cell does not allow newline characters in fileds](https://octave.sourceforge.io/io/function/csv2cell.html), I need to pre-process the dataset, keeping only the variables necessary.
+
+```{r}
+#| message: false
+
+library(readr)
+library(dplyr)
+
+test_data <- read_csv("dat/Paired-Samples t-test/pairedttest_R_Protzko.csv")
+
+test_data <- test_data |> select(RightMyth, RightProcedural)
+
+test_data |> write_csv("paired_t_test.csv")
+```
+
+
 Octave version: 11.3.0
 
 ```{octave}
@@ -21,17 +37,28 @@ warning('off', 'Octave:shadowed-function');
 
 %% Load packages:
 pkg load statistics
-pkg load io
 
 
-% Read in data:
-raw       = csv2cell('dat/Paired-Samples t-test/pairedttest_R_Protzko.csv');
-var_names = raw(1, :);
-data      = cell2struct(raw(2:end, :), var_names, 2);
+% Read in data
+fid = fopen('paired_t_test.csv', 'r');
 
-% Select variables
-RightMyth       = [data.RightMyth]';
-RightProcedural = [data.RightProcedural]';
+data = textscan(fid, '%f %f', 'Delimiter', ',', 'HeaderLines', 1);
+
+fclose(fid);
+
+% Get columns
+RightMyth       = data{1};
+RightProcedural = data{2};
+
 
 [sig, p_value, ci, stats] = ttest(RightMyth, RightProcedural)
 ```
+
+The temporal file with the two variables is then deleted:
+
+```{r}
+#| results: hide
+
+file.remove("paired_t_test.csv")
+```
+
